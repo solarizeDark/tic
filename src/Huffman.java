@@ -1,6 +1,4 @@
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -20,38 +18,16 @@ public class Huffman {
     static Map<Character, String> codes;
     static Map<Character, Double> stats;
 
-    static String codesFile;
-    static String encodedFile;
+    // файл с кодами
+    static String codesFile = "codes.txt";
 
     static char[] symbols;
     static Node root;
 
-    static FileWriter decodingFileWriter;
-
     static {
-        codesFile = "codes.txt";
-        encodedFile = "encoded.txt";
         stats = new HashMap<>();
         codes = new HashMap<>();
         root = new Node();
-        try {
-            decodingFileWriter = new FileWriter("decoded.txt");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void mainEncodingFunction(String filePath) throws IOException {
-        // Считывание файла
-        readMessage(filePath);
-        // Подсчет статистики
-        stats(symbols);
-        // Построение дерева кодов
-        compress();
-        // Кодирование файла
-        encodeFile(symbols);
-        // Запись таблицы <символ - код> в отдельный файл
-        writeCodes();
     }
 
     public static void encode(String prev, Node root) {
@@ -97,7 +73,7 @@ public class Huffman {
         }
     }
 
-    public static void compress() {
+    public static void coder() {
         // Создание красно-черного дерево <вероятность - список символов>
         // O(nlog(n))
         TreeMap<Double, List<Node>> nodes = new TreeMap<>();
@@ -154,7 +130,7 @@ public class Huffman {
     }
 
     private static void encodeFile(char[] symbols) throws IOException {
-        File encodedFile = new File(Huffman.encodedFile);
+        File encodedFile = new File("encoded.txt");
         FileWriter writer = new FileWriter(encodedFile);
 
         for (char symbol : symbols) {
@@ -177,24 +153,58 @@ public class Huffman {
         writer.close();
     }
 
-    public static void decode() throws IOException {
-        readMessage(encodedFile);
-        compress();
+    public static void probabilitiesFromFile(String fileName) throws IOException {
+        File statistics = new File(fileName);
+        BufferedReader reader = new BufferedReader(new FileReader(statistics));
+
+        String line;
+        while((line = reader.readLine()) != null) {
+            stats.put(line.split(" ")[0].toCharArray()[0], Double.parseDouble(line.split(" ")[1]));
+        }
+    }
+
+    public static void decoder(String fileEncoded, String fileProbabilities, String fileDecoded, boolean flag) throws IOException {
+        readMessage(fileEncoded);
+        if (flag) probabilitiesFromFile(fileProbabilities);
+        coder();
+
+        File codesFile = new File(fileDecoded);
+        FileWriter writer = new FileWriter(codesFile);
 
         Node temp = root;
         int cnt = 0;
         while (cnt != symbols.length) {
             if (temp.left == null && temp.right == null) {
-                System.out.print(temp.symbol);
+                writer.write(temp.symbol);
+                writer.flush();
                 temp = root;
             } else if (symbols[cnt++] == '0') temp = temp.left;
             else temp = temp.right;
         }
+        writer.close();
     }
 
     public static void main(String[] args) throws IOException {
-        mainEncodingFunction("input.txt");
-        decode();
+
+        if (args[0].compareTo("f") == 0) {
+            // Считывание файла
+            readMessage(args[1]);
+            // Подсчет статистики
+            stats(symbols);
+            // Построение дерева кодов
+            coder();
+            // Кодирование файла
+            encodeFile(symbols);
+            // Запись таблицы <символ - код> в отдельный файл
+            writeCodes();
+            // Декодирование
+            decoder("encoded.txt", "", "decoded.txt", false);
+        } else {
+            decoder(args[0], args[1], "decoded.txt", true);
+            writeCodes();
+        }
+
+
     }
 
 }
