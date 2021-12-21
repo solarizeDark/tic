@@ -16,6 +16,7 @@ public class MoveToFront {
         StringBuilder code = new StringBuilder();
         char[] bwtcode = fromBWT.toCharArray();
 
+        // сложность nk
         for (int i = 0; i < bwtcode.length; i++) {
             // bwtcode[i] - ' ' - порядковый номер символа в алфавите
             int pos = bwtcode[i] - ' ';
@@ -35,6 +36,7 @@ public class MoveToFront {
 
         StringBuilder current = new StringBuilder();
         int cnt = 0;
+        // nk - сложность, k - размер алфавита
         for (int i = 0; ; i++) {
 
             try {
