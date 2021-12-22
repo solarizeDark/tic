@@ -1,13 +1,13 @@
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 public class Hamming_74 {
 
     public static int[][]
-    G =
-    {
-            {1, 0, 0, 0, 1, 0, 1},
-            {0, 1, 0, 0, 1, 1, 1},
-            {0, 0, 1, 0, 1, 1, 0},
-            {0, 0, 0, 1, 0, 1, 1}
-    },
     H =
     {
             {1, 1, 1, 0, 1, 0, 0},
@@ -22,7 +22,7 @@ public class Hamming_74 {
             for (int j = 6; j >= 0; j--) {
                 tempSum += H[i][j] & (((encoded & 1 << (6 - j)) > 0 ? 0b1 : 0b0));
             }
-            syndrome += tempSum % 2;
+            syndrome += (tempSum % 2) << (2 - i);
 
         }
         // System.out.println(syndrome);
@@ -37,43 +37,62 @@ public class Hamming_74 {
         return (char) f;
     }
 
-    public static byte[] decode (byte[] encoded) {
+    public static byte[] decode (String filePath) throws IOException {
+
+        Path from = Paths.get(filePath);
+
+        byte[] encoded = Files.readAllBytes(from);
+        char[] res = new char[encoded.length / 2];
         int i = 0;
-        for (byte b : encoded) {
+        int j = 0;
+        for (; i < encoded.length; i++) {
 
             if (i % 2 == 0 && i > 0) {
-                System.out.println(decodeSymbol(encoded[i - 2], encoded[i - 1]));
+                res[j++] = decodeSymbol(encoded[i - 2], encoded[i - 1]);
             }
 
-            byte syndrome = syndrome(b);
+            byte syndrome = syndrome(encoded[i]);
             switch (syndrome) {
-                case 3: b ^= 1 << 3; break;
-                case 5: b ^= 1 << 6; break;
-                case 6: b ^= 1 << 4; break;
-                case 7: b ^= 1 << 5; break;
+                case 3: encoded[i] ^= 1 << 3; break;
+                case 5: encoded[i] ^= 1 << 6; break;
+                case 6: encoded[i] ^= 1 << 4; break;
+                case 7: encoded[i] ^= 1 << 5; break;
             }
 
-            i++;
         }
-        System.out.println(decodeSymbol(encoded[i - 2], encoded[i - 1]));
+        res[j] = decodeSymbol(encoded[i - 2], encoded[i - 1]);
+
+        File encodedFile = new File("decoded.txt");
+        FileWriter writer = new FileWriter(encodedFile);
+        writer.write(res);
+
+        writer.close();
 
         return encoded;
     }
 
-    public static byte[] encode(String input) {
+    public static void encode(String filePathFrom) throws IOException {
+
+        Path from = Paths.get(filePathFrom);
+
+        byte[] input = Files.readAllBytes(from);
 
         int i = 0;
-        byte[] encoded = new byte[2 * input.length()];
+        byte[] encoded = new byte[2 * input.length];
 
-        for (char symbol : input.toCharArray()) {
-            byte[] res = encodeSymbol(symbol);
+        for (byte symbol : input) {
+            byte[] res = encodeSymbol((char)symbol);
             encoded[i++] = res[0];
             encoded[i++] = res[1];
         }
 
-        for(byte b : encoded) System.out.println(Integer.toBinaryString(b));
+        File encodedFile = new File("encoded.txt");
+        FileWriter writer = new FileWriter(encodedFile);
 
-        return encoded;
+        for (byte en : encoded) writer.write(en);
+
+        writer.close();
+
     }
 
     public static byte[] encodeSymbol(char symbol) {
@@ -106,8 +125,9 @@ public class Hamming_74 {
         return res;
     }
 
-    public static void main(String[] args) {
-        decode(encode("hello"));
+    public static void main(String[] args) throws IOException {
+        encode("message.txt");
+        decode("encoded.txt");
     }
 
 }
