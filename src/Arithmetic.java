@@ -167,7 +167,7 @@ public class Arithmetic {
     }
 
     public static void writeEncoded(double res) throws IOException {
-        File encodedFile = new File("encoded.txt");
+        File encodedFile = new File("arithmetic_encoding_resources/encoded.txt");
         FileWriter writer = new FileWriter(encodedFile);
 
         System.out.println(res);
@@ -177,8 +177,8 @@ public class Arithmetic {
     }
 
     public static void main(String[] args) throws IOException {
-        readMessage("input.txt");
-        probabilitiesFromFile("stats.txt");
+        readMessage("arithmetic_encoding_resources/input.txt");
+        probabilitiesFromFile("arithmetic_encoding_resources/stats.txt");
         double res = coder();
         writeEncoded(res);
         decoder(res);

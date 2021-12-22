@@ -22,6 +22,7 @@ public class MoveToFront {
             int pos = bwtcode[i] - ' ';
             int previous = alphabet[pos];
             code.append(pos);
+            code.append('.');
             // символ становится на нулевую позицию
             alphabet[pos] = 0;
             // все символы до текущего сдивагются на один дальше
@@ -35,41 +36,23 @@ public class MoveToFront {
         char[] encoded_arr = encoded.toCharArray();
 
         StringBuilder current = new StringBuilder();
-        int cnt = 0;
+
         // nk - сложность, k - размер алфавита
-        for (int i = 0; ; i++) {
+        for (int i = 0; i < encoded_arr.length; i++) {
+            if (encoded_arr[i] == '.') {
+                int pos = Integer.parseInt(current.toString());
+                int previous = alphabet[pos];
+                decoded.append((char) (pos + ' '));
 
-            try {
-                // ascii interval
-                if (Integer.parseInt(current.toString()) >= ' '
-                        && Integer.parseInt(current.toString()) <= ' ' + 93) {
-
-                    int pos = Integer.parseInt(current.toString());
-                    int previous = alphabet[pos];
-                    decoded.append((char) (pos + ' '));
-
-                    alphabet[pos] = 0;
-                    for (int j = 0; j < alphabet.length; j++) if (alphabet[j] <= previous && j != pos) alphabet[j] += 1;
-                    current.setLength(0);
-                }
-                if (i >= encoded_arr.length) break;
-                current.append(encoded_arr[i]);
-
-            } catch (NumberFormatException e) {
+                alphabet[pos] = 0;
+                for (int j = 0; j < alphabet.length; j++) if (alphabet[j] <= previous && j != pos) alphabet[j] += 1;
+                current.setLength(0);
+            } else {
                 current.append(encoded_arr[i]);
             }
-
         }
+
         return decoded.toString();
-    }
-
-
-    public static void main(String[] args) {
-        setAlphabet();
-        String encoded = encode("rdakraaaabb");
-        System.out.println(encoded);
-        setAlphabet();
-        System.out.println(decode(encoded));
     }
 
 }

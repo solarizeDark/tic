@@ -1,9 +1,19 @@
-import java.util.*;
+import java.io.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.TreeMap;
 
 class Pair {
 
     public String s;
     public Integer x;
+
+    public Pair() {}
+
+    public Pair(String s, Integer x) {
+        this.s = s;
+        this.x = x;
+    }
 
 }
 
@@ -89,9 +99,37 @@ public class BWT {
 
     }
 
-    public static void main(String[] args) {
-        System.out.println(transform("abacaba").s + " " + transform("abacaba").x);
-        System.out.println(decode(transform("abacaba")));
+    public static void main(String[] args) throws IOException {
+
+        File message = new File("BWT_MTF_resources/message.txt");
+        BufferedReader reader = new BufferedReader(new FileReader(message));
+        StringBuilder mes = new StringBuilder("");
+        String line;
+        while((line = reader.readLine()) != null) {
+            mes.append(line);
+        }
+
+        Pair transformed = transform(String.valueOf(mes));
+        System.out.println(transformed.s);
+        MoveToFront.setAlphabet();
+        String encoded = MoveToFront.encode(transformed.s);
+        System.out.println(encoded);
+        MoveToFront.setAlphabet();
+        String decoded = MoveToFront.decode(encoded);
+
+        Pair p = new Pair();
+        p.x = transformed.x;
+        p.s = decoded;
+
+        decoded = decode(p);
+        System.out.println(decoded);
+
+        File decodedFile = new File("BWT_MTF_resources/decoded.txt");
+        FileWriter writer = new FileWriter(decodedFile);
+        writer.write(decoded);
+        writer.flush();
+        writer.close();
+
     }
 
 }

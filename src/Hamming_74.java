@@ -42,7 +42,7 @@ public class Hamming_74 {
         Path from = Paths.get(filePath);
 
         byte[] encoded = Files.readAllBytes(from);
-        char[] res = new char[encoded.length / 2];
+        char[] res = new char[encoded.length / 2]; // br
         int i = 0;
         int j = 0;
         for (; i < encoded.length; i++) {
@@ -62,7 +62,7 @@ public class Hamming_74 {
         }
         res[j] = decodeSymbol(encoded[i - 2], encoded[i - 1]);
 
-        File encodedFile = new File("decoded.txt");
+        File encodedFile = new File("hamming(7,4)_encoding_resources/decoded.txt");
         FileWriter writer = new FileWriter(encodedFile);
         writer.write(res);
 
@@ -86,7 +86,7 @@ public class Hamming_74 {
             encoded[i++] = res[1];
         }
 
-        File encodedFile = new File("encoded.txt");
+        File encodedFile = new File("hamming(7,4)_encoding_resources/encoded.txt");
         FileWriter writer = new FileWriter(encodedFile);
 
         for (byte en : encoded) writer.write(en);
@@ -126,8 +126,8 @@ public class Hamming_74 {
     }
 
     public static void main(String[] args) throws IOException {
-        encode("message.txt");
-        decode("encoded.txt");
+        encode("hamming(7,4)_encoding_resources/message.txt");
+        decode("hamming(7,4)_encoding_resources/encoded.txt");
     }
 
 }
