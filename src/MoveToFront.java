@@ -4,11 +4,11 @@ public class MoveToFront {
     static char[] a;
 
     public static void setAlphabet() {
-        alphabet = new int[94];
-        a = new char[94];
+        alphabet = new int[128];
+        a = new char[128];
         for (int i = 0; i < alphabet.length; i++) {
             alphabet[i] = i;
-            a[i] = (char) (i + ' ');
+            a[i] = (char) (i);
         }
     }
 
@@ -18,8 +18,8 @@ public class MoveToFront {
 
         // сложность nk
         for (int i = 0; i < bwtcode.length; i++) {
-            // bwtcode[i] - ' ' - порядковый номер символа в алфавите
-            int pos = bwtcode[i] - ' ';
+            // порядковый номер символа в алфавите
+            int pos = bwtcode[i];
             int previous = alphabet[pos];
             code.append(pos);
             code.append('.');
@@ -42,7 +42,7 @@ public class MoveToFront {
             if (encoded_arr[i] == '.') {
                 int pos = Integer.parseInt(current.toString());
                 int previous = alphabet[pos];
-                decoded.append((char) (pos + ' '));
+                decoded.append(a[pos]);
 
                 alphabet[pos] = 0;
                 for (int j = 0; j < alphabet.length; j++) if (alphabet[j] <= previous && j != pos) alphabet[j] += 1;

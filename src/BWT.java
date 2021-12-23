@@ -10,15 +10,12 @@ class Pair {
 
     public Pair() {}
 
-    public Pair(String s, Integer x) {
-        this.s = s;
-        this.x = x;
-    }
-
 }
 
 public class BWT {
 
+    // бинпоиск переписан так, чтобы возвращать индекс самой первой
+    // буквы из одинаковых
     public static int binSearch(char[] arr, char key) {
         int l = 0, r = arr.length - 1;
 
@@ -40,7 +37,11 @@ public class BWT {
     public static Pair transform(String initial) {
         // сдвиг - изначальная позиция
         TreeMap<String, Integer> sorted = new TreeMap<>();
+
+        // оригинальная строка
         sorted.put(initial, 0);
+
+        // сдвиги добавляются в красно черное дерево
         for (int i = 1; i < initial.length(); i++) {
             String shifted = initial.substring(i) + initial.substring(0, i);
             sorted.put(shifted, i);
@@ -49,12 +50,17 @@ public class BWT {
         StringBuilder transformed = new StringBuilder();
         int pos = -1;
         int i = 0;
+
+        // идем по дереву в лексикографическом порядке по ключам берем последние буквы строк
+        // если встретили оригинальную строку, запоминаем ее номер
         for (String s = sorted.firstKey(); !s.equals(sorted.lastKey()); s = sorted.higherKey(s)) {
             if (s.equals(initial)) pos = i;
             i++;
             transformed.append(s.substring(s.length() - 1));
         }
         transformed.append(sorted.lastKey().substring(sorted.lastKey().length() - 1));
+
+        // оригинал оказался последним
         if (pos == -1) pos = i;
 
         Pair p = new Pair();
@@ -67,13 +73,15 @@ public class BWT {
         char[] symbols = pair.s.toCharArray();
         Arrays.sort(symbols);
 
-        // куда ведет - индексы
+        // индекс символа в алфавите - индексы строки
         HashMap<Integer, Integer> mi = new HashMap<>();
 
-        // куда ведет - буквы
+        // индекс символа в алфавите - символ
         HashMap<Integer, Character> mc = new HashMap<>();
 
+        // символ - сколько раз данный символ встретился в строке
         HashMap<Character, Integer> hm = new HashMap<>();
+
         int i = 0;
         for (char c : pair.s.toCharArray()) {
             int path;
@@ -90,7 +98,10 @@ public class BWT {
         }
 
         StringBuilder decoded = new StringBuilder();
+
+        // позиция, на которой оказалась оригинальная строка
         int next = pair.x;
+
         while (true) {
             decoded.append(mc.get(next));
             next = mi.get(next);
@@ -107,13 +118,12 @@ public class BWT {
         String line;
         while((line = reader.readLine()) != null) {
             mes.append(line);
+            mes.append('\n');
         }
 
         Pair transformed = transform(String.valueOf(mes));
-        System.out.println(transformed.s);
         MoveToFront.setAlphabet();
         String encoded = MoveToFront.encode(transformed.s);
-        System.out.println(encoded);
         MoveToFront.setAlphabet();
         String decoded = MoveToFront.decode(encoded);
 
@@ -122,7 +132,6 @@ public class BWT {
         p.s = decoded;
 
         decoded = decode(p);
-        System.out.println(decoded);
 
         File decodedFile = new File("BWT_MTF_resources/decoded.txt");
         FileWriter writer = new FileWriter(decodedFile);

@@ -19,7 +19,7 @@ public class Huffman {
     static Map<Character, Double> stats;
 
     // файл с кодами
-    static String codesFile = "codes.txt";
+    static String codesFile = "huffman_encoding_resources/codes.txt";
 
     static char[] symbols;
     static Node root;
@@ -130,7 +130,7 @@ public class Huffman {
     }
 
     private static void encodeFile(char[] symbols) throws IOException {
-        File encodedFile = new File("encoded.txt");
+        File encodedFile = new File("huffman_encoding_resources/encoded.txt");
         FileWriter writer = new FileWriter(encodedFile);
 
         for (char symbol : symbols) {
@@ -186,24 +186,19 @@ public class Huffman {
 
     public static void main(String[] args) throws IOException {
 
-        if (args[0].compareTo("f") == 0) {
-            // Считывание файла
-            readMessage(args[1]);
-            // Подсчет статистики
-            stats(symbols);
-            // Построение дерева кодов
-            coder();
-            // Кодирование файла
-            encodeFile(symbols);
-            // Запись таблицы <символ - код> в отдельный файл
-            writeCodes();
-            // Декодирование
-            decoder("encoded.txt", "", "decoded.txt", false);
-        } else {
-            decoder(args[0], args[1], "decoded.txt", true);
-            writeCodes();
-        }
-
+        // Считывание файла
+        readMessage("huffman_encoding_resources/input.txt");
+        // Подсчет статистики
+        stats(symbols);
+        // Построение дерева кодов
+        coder();
+        // Кодирование файла
+        encodeFile(symbols);
+        // Запись таблицы <символ - код> в отдельный файл
+        writeCodes();
+        // Декодирование
+        decoder("huffman_encoding_resources/encoded.txt", "",
+                "huffman_encoding_resources/decoded.txt", false);
 
     }
 

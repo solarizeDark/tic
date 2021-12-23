@@ -1,4 +1,5 @@
 import java.io.*;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -7,7 +8,7 @@ import java.util.*;
 public class Arithmetic {
 
     static char[] symbols;
-    static Map<Character, Double> stats;
+    static Map<Character, BigDecimal> stats;
 
     static {
         stats = new HashMap<>();
@@ -37,7 +38,7 @@ public class Arithmetic {
         // Перевод частот в вероятности
         // O(n)
         for (Character symbol : counter.keySet()) {
-            stats.put(symbol, (double) counter.get(symbol) / symbols.length);
+            stats.put(symbol, BigDecimal.valueOf((double)counter.get(symbol) / symbols.length));
         }
     }
 
@@ -47,13 +48,13 @@ public class Arithmetic {
 
         String line;
         while((line = reader.readLine()) != null) {
-            stats.put(line.split(" ")[0].toCharArray()[0], Double.parseDouble(line.split(" ")[1]));
+            stats.put(line.split(" ")[0].toCharArray()[0], new BigDecimal(line.split(" ")[1]));
         }
     }
 
-    public static TreeMap<Double, List<Character>> statsReverse() {
+    public static TreeMap<BigDecimal, List<Character>> statsReverse() {
         // Дерево вероятность - символы
-        TreeMap<Double, List<Character>> statsR = new TreeMap<>();
+        TreeMap<BigDecimal, List<Character>> statsR = new TreeMap<>();
         for (Character symbol : stats.keySet()) {
             if (!statsR.containsKey(stats.get(symbol))) {
                 List<Character> temp = new ArrayList<>(Arrays.asList(symbol));
@@ -66,18 +67,18 @@ public class Arithmetic {
         return statsR;
     }
 
-    public static List<Double> bounds(TreeMap<Double, List<Character>> statsR) {
-        List<Double> bounds = new ArrayList<>();
-        bounds.add(0.0);
-        double current = statsR.lowerKey(1.0);
-        double cumulative_p = 0.0;
+    public static List<BigDecimal> bounds(TreeMap<BigDecimal, List<Character>> statsR) {
+        List<BigDecimal> bounds = new ArrayList<>();
+        bounds.add(BigDecimal.valueOf(0.0));
+        BigDecimal current = statsR.lowerKey(BigDecimal.valueOf(1.0));
+        BigDecimal cumulative_p = BigDecimal.valueOf(0);
 
         // Создание изначального списка границ
         // (n)
         for (;;) {
 
             for (int i = 0; i < statsR.get(current).size(); i++) {
-                cumulative_p += current;
+                cumulative_p = cumulative_p.add(current);
                 bounds.add(cumulative_p);
             }
             // log(n)
@@ -91,37 +92,37 @@ public class Arithmetic {
         return bounds;
     }
 
-    public static Map<Character, Integer> positionBySymbol(List<Double> bounds,
-                                                           TreeMap<Double, List<Character>> statsR) {
+    public static Map<Character, Integer> positionBySymbol(List<BigDecimal> bounds,
+                                                           TreeMap<BigDecimal, List<Character>> statsR) {
         // Создание мапы символ - граница символа
         Map<Character, Integer> symbolPosition = new HashMap<>();
         int position = bounds.size() - 1;
-        for (Double key : statsR.keySet())
+        for (BigDecimal key : statsR.keySet())
             for (int i = 0; i < statsR.get(key).size(); i++)
                 symbolPosition.put(statsR.get(key).get(i), --position);
         return symbolPosition;
     }
 
-    public static Map<Integer, Character> symbolByPosition(List<Double> bounds,
-                                                           TreeMap<Double, List<Character>> statsR) {
+    public static Map<Integer, Character> symbolByPosition(List<BigDecimal> bounds,
+                                                           TreeMap<BigDecimal, List<Character>> statsR) {
         // Создание мапы граница символа - символ
         Map<Integer, Character> symbolPosition = new HashMap<>();
         int position = bounds.size() - 1;
-        for (Double key : statsR.keySet())
+        for (BigDecimal key : statsR.keySet())
             for (int i = 0; i < statsR.get(key).size(); i++)
                 symbolPosition.put(--position, statsR.get(key).get(i));
         return symbolPosition;
     }
 
-    public static double coder() {
+    public static BigDecimal coder() {
 
-        TreeMap<Double, List<Character>> statsR = statsReverse();
-        List<Double> bounds = bounds(statsR);
+        TreeMap<BigDecimal, List<Character>> statsR = statsReverse();
+        List<BigDecimal> bounds = bounds(statsR);
         Map<Character, Integer> symbolPosition = positionBySymbol(bounds, statsR);
 
-        List<Double> boundsInitial = new ArrayList<>(bounds);
+        List<BigDecimal> boundsInitial = new ArrayList<>(bounds);
 
-        double left, right;
+        BigDecimal left, right;
         for (Character symbol : symbols) {
 
             left = bounds.get(symbolPosition.get(symbol));
@@ -129,44 +130,49 @@ public class Arithmetic {
             bounds.set(0, left);
             bounds.set(bounds.size() - 1, right);
 
-            double distance = right - left;
+            BigDecimal distance = right.subtract(left);
 
             for (int i = 1; i < bounds.size() - 1; i++) {
-                bounds.set(i, left + boundsInitial.get(i) * distance);
+                bounds.set(i, left.add(boundsInitial.get(i).multiply(distance)));
             }
         }
-        return bounds.get(0) + (bounds.get(bounds.size() - 1) - bounds.get(0)) / 2;
+        return bounds.get(0).add(bounds.get(bounds.size() - 1).subtract(bounds.get(0)).divide(BigDecimal.valueOf(2)));
     }
 
-    public static void decoder(double code) {
-        TreeMap<Double, List<Character>> statsR = statsReverse();
-        List<Double> bounds = bounds(statsR);
+    public static String decoder(BigDecimal code) {
+
+        String decoded = "";
+
+        TreeMap<BigDecimal, List<Character>> statsR = statsReverse();
+        List<BigDecimal> bounds = bounds(statsR);
         Map<Integer, Character> symbolPosition = symbolByPosition(bounds, statsR);
 
-        List<Double> boundsInitial = new ArrayList<>(bounds);
+        List<BigDecimal> boundsInitial = new ArrayList<>(bounds);
 
-        double left, right;
+        BigDecimal left, right;
         while(true) {
             int j = 0;
-            for(; code > bounds.get(j); j++);
+            for(; code.compareTo(bounds.get(j)) > 0; j++);
 
+            decoded += symbolPosition.get(j - 1);
             if (symbolPosition.get(j - 1) == '!') break;
-            System.out.print(symbolPosition.get(j - 1));
 
             left = bounds.get(j - 1);
             right = bounds.get(j);
             bounds.set(0, left);
             bounds.set(bounds.size() - 1, right);
 
-            double distance = right - left;
+            BigDecimal distance = right.subtract(left);
 
             for (int i = 1; i < bounds.size() - 1; i++) {
-                bounds.set(i, left + boundsInitial.get(i) * distance);
+                bounds.set(i, left.add(boundsInitial.get(i).multiply(distance)));
             }
         }
+
+        return decoded;
     }
 
-    public static void writeEncoded(double res) throws IOException {
+    public static void writeEncoded(BigDecimal res) throws IOException {
         File encodedFile = new File("arithmetic_encoding_resources/encoded.txt");
         FileWriter writer = new FileWriter(encodedFile);
 
@@ -178,10 +184,12 @@ public class Arithmetic {
 
     public static void main(String[] args) throws IOException {
         readMessage("arithmetic_encoding_resources/input.txt");
-        probabilitiesFromFile("arithmetic_encoding_resources/stats.txt");
-        double res = coder();
+        statistics();
+        BigDecimal res = coder();
         writeEncoded(res);
-        decoder(res);
-    }
 
+        FileWriter writer = new FileWriter("arithmetic_encoding_resources/decoded.txt");
+        writer.write(decoder(res));
+        writer.flush();
+    }
 }
